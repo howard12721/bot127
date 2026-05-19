@@ -17,10 +17,17 @@ internal fun TraktClientBuilder.installCommands(services: BotServices) {
 private fun CommandRegistryBuilder.registerForwardCommands(services: BotServices) {
     command("forward") {
         literal("add") {
-            channel("channel") {
-                user("user") {
+            listOf("any", "任意", "*").forEach { anyChannelLiteral ->
+                literal(anyChannelLiteral) {
                     greedyString("pattern") {
-                        executes { command -> command.handleForwardAdd(services) }
+                        executes { command -> command.handleForwardAdd(services, sourceChannelId = null) }
+                    }
+                }
+            }
+            channel("channel") {
+                greedyString("pattern") {
+                    executes { command ->
+                        command.handleForwardAdd(services, sourceChannelId = command.args.channel("channel").id)
                     }
                 }
             }

@@ -6,15 +6,19 @@ import kotlin.uuid.Uuid
 
 data class ForwardRule(
     val id: Uuid,
-    val channelId: ChannelId,
+    /** `null` のときは全パブリックチャンネルが転送元。 */
+    val channelId: ChannelId?,
     val patternText: String,
     val targetUserId: UserId,
 ) {
     val pattern: Regex by lazy { parseRegexPattern(patternText) }
 
+    val matchesAnyChannel: Boolean
+        get() = channelId == null
+
     companion object {
         fun create(
-            channelId: ChannelId,
+            channelId: ChannelId?,
             patternText: String,
             targetUserId: UserId,
         ): ForwardRule =

@@ -4,7 +4,7 @@ import jp.xhw.bot127.bot.BotServices
 import jp.xhw.bot127.bot.configureBot
 import jp.xhw.bot127.config.AppConfig
 import jp.xhw.bot127.persistence.DatabaseFactory
-import jp.xhw.bot127.persistence.ForwardRuleRepository
+import jp.xhw.bot127.persistence.CachingForwardRuleRepository
 import jp.xhw.bot127.watch.configureWatcher
 import jp.xhw.trakt.bot.selfTrakt
 import jp.xhw.trakt.bot.trakt
@@ -17,10 +17,13 @@ object App {
         DatabaseFactory.init(config.database)
         registerShutdownHook { DatabaseFactory.close() }
 
+        val rules = CachingForwardRuleRepository()
+        rules.warmUp()
+
         val services =
             BotServices(
                 config = config,
-                rules = ForwardRuleRepository(),
+                rules = rules,
             )
 
         val bot =

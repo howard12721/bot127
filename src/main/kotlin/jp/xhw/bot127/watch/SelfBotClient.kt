@@ -1,6 +1,7 @@
 package jp.xhw.bot127.watch
 
 import jp.xhw.bot127.bot.BotServices
+import jp.xhw.bot127.domain.isDirectMessageChannel
 import jp.xhw.trakt.bot.context.base.fetch
 import jp.xhw.trakt.bot.context.base.fetchUserOrNull
 import jp.xhw.trakt.bot.context.base.sendDirectMessage
@@ -39,6 +40,9 @@ private suspend fun forwardMatchingRules(
     if (message.author.id == fetchMe().id) {
         return
     }
+    if (message.channel.id.isDirectMessageChannel()) {
+        return
+    }
 
     val rules = services.rules.forChannel(message.channel.id)
     if (rules.isEmpty()) {
@@ -50,11 +54,17 @@ private suspend fun forwardMatchingRules(
 
     rules
         .filter { it.pattern.containsMatchIn(content) }
-        .forEach { rule ->
+        .map { it.targetUserId }
+        .distinct()
+        .forEach { targetUserId ->
             bot.execute {
-                val targetUser = fetchUserOrNull(rule.targetUserId) ?: return@execute
-                runCatching {
-                    targetUser.sendDirectMessage(content = messageUrl, embed = true)
+                val targetUser = fetchUserOrNull(targetUserId) ?: return@execute
+                val failure =
+                    runCatching {
+                        targetUser.sendDirectMessage(content = messageUrl, embed = true)
+                    }.exceptionOrNull()
+                if (failure != null) {
+                    reportForwardFailure(services, targetUserId, messageUrl, failure)
                 }
             }
         }
