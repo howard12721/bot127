@@ -1,6 +1,7 @@
 package jp.xhw.bot127.watch
 
 import jp.xhw.bot127.bot.BotServices
+import jp.xhw.bot127.domain.isDirectMessageChannel
 import jp.xhw.trakt.bot.context.base.fetch
 import jp.xhw.trakt.bot.context.base.fetchUserOrNull
 import jp.xhw.trakt.bot.context.base.sendDirectMessage
@@ -37,6 +38,9 @@ private suspend fun forwardMatchingRules(
 ) {
     val message = event.message.fetch()
     if (message.author.id == fetchMe().id) {
+        return
+    }
+    if (message.channel.id.isDirectMessageChannel()) {
         return
     }
 

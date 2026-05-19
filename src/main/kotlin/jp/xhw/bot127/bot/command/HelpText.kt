@@ -5,7 +5,8 @@ internal fun botHelpText(): String =
     メッセージ転送BOT
 
     `!forward add #channel @user /正規表現/`
-      指定チャンネルのメッセージが正規表現にマッチしたら、@user のDMにメッセージURLを送ります。
+      指定パブリックチャンネルのメッセージが正規表現にマッチしたら、@user のDMにメッセージURLを送ります。
+      DM チャンネルは監視・ルール登録の対象外です。
       正規表現は `/pattern/` または `/pattern/i`（大文字小文字無視）形式、または素のパターン文字列でも指定できます。
 
     `!forward list`

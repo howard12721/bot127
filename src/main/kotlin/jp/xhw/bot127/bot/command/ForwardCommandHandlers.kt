@@ -2,6 +2,7 @@ package jp.xhw.bot127.bot.command
 
 import jp.xhw.bot127.bot.BotServices
 import jp.xhw.bot127.domain.ForwardRule
+import jp.xhw.bot127.domain.isDirectMessageChannel
 import jp.xhw.bot127.domain.parseRegexPattern
 import jp.xhw.trakt.bot.command.CommandContext
 import jp.xhw.trakt.bot.context.base.fetchChannelOrNull
@@ -16,6 +17,11 @@ internal suspend fun CommandContext.handleForwardAdd(services: BotServices) {
     if (!message.isAllowedConfigChannel(services.config)) return
 
     val channel = args.channel("channel")
+    if (channel.id.isDirectMessageChannel()) {
+        message.reply("DM チャンネルは転送ルールの対象にできません。パブリックチャンネルを指定してください。")
+        return
+    }
+
     val targetUser = args.user("user")
     val patternText = args.string("pattern")
 
