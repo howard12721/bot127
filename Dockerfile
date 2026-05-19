@@ -1,4 +1,4 @@
-FROM eclipse-temurin:25.0.2_10-jdk AS builder
+FROM eclipse-temurin:25.0.3_9-jdk AS builder
 
 WORKDIR /workspace
 
@@ -16,7 +16,7 @@ RUN set -eux; \
     mv "build/install/$app_name" /opt/app; \
     ln -s "/app/bin/$app_name" /opt/app/bin/start
 
-FROM eclipse-temurin:25.0.2_10-jre
+FROM eclipse-temurin:25.0.3_9-jre
 
 RUN useradd --system --create-home --home-dir /home/appuser appuser
 
