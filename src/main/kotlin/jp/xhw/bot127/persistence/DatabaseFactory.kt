@@ -3,10 +3,7 @@ package jp.xhw.bot127.persistence
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import jp.xhw.bot127.config.DatabaseConfig
-import jp.xhw.bot127.persistence.table.ForwardRulesTable
 import org.jetbrains.exposed.v1.jdbc.Database
-import org.jetbrains.exposed.v1.jdbc.SchemaUtils
-import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 
 object DatabaseFactory {
     private lateinit var dataSource: HikariDataSource
@@ -22,9 +19,7 @@ object DatabaseFactory {
                 },
             )
         Database.connect(dataSource)
-        transaction {
-            SchemaUtils.create(ForwardRulesTable)
-        }
+        SchemaInitializer.init(dataSource)
     }
 
     fun close() {

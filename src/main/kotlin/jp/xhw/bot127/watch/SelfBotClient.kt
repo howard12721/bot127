@@ -2,18 +2,20 @@ package jp.xhw.bot127.watch
 
 import jp.xhw.bot127.bot.BotServices
 import jp.xhw.bot127.domain.isDirectMessageChannel
+import jp.xhw.bot127.domain.shouldExcludeMessage
 import jp.xhw.trakt.bot.context.base.fetch
 import jp.xhw.trakt.bot.context.base.fetchUserOrNull
 import jp.xhw.trakt.bot.context.base.sendDirectMessage
 import jp.xhw.trakt.bot.context.base.url
 import jp.xhw.trakt.bot.context.bot.BotContext
+import jp.xhw.trakt.bot.context.bot.fetchMe
 import jp.xhw.trakt.bot.context.user.UserContext
-import jp.xhw.trakt.bot.context.user.fetchMe
 import jp.xhw.trakt.bot.context.user.setTimelineStreaming
 import jp.xhw.trakt.bot.infrastructure.runtime.Runtime
 import jp.xhw.trakt.bot.infrastructure.runtime.SelfTraktClientBuilder
 import jp.xhw.trakt.bot.model.BotEvent
 import jp.xhw.trakt.bot.model.Initialized
+import jp.xhw.trakt.bot.model.UserId
 import jp.xhw.trakt.bot.model.UserMessageCreated
 
 fun SelfTraktClientBuilder.configureWatcher(
@@ -37,14 +39,16 @@ private suspend fun forwardMatchingRules(
     bot: Runtime<BotContext, BotEvent>,
 ) {
     val message = event.message.fetch()
-    if (message.author.id == fetchMe().id) {
-        return
-    }
     if (message.channel.id.isDirectMessageChannel()) {
         return
     }
 
-    val rules = services.rules.forChannel(message.channel.id)
+    val botUserId = resolveBotUserId(services, bot)
+    val rules =
+        services.rules
+            .forChannel(message.channel.id)
+            .filter { it.pattern.containsMatchIn(message.content) }
+            .filter { !it.shouldExcludeMessage(message.author.id, botUserId) }
     if (rules.isEmpty()) {
         return
     }
@@ -53,7 +57,6 @@ private suspend fun forwardMatchingRules(
     val messageUrl = message.url()
 
     rules
-        .filter { it.pattern.containsMatchIn(content) }
         .map { it.targetUserId }
         .distinct()
         .forEach { targetUserId ->
@@ -68,4 +71,13 @@ private suspend fun forwardMatchingRules(
                 }
             }
         }
+}
+
+private suspend fun resolveBotUserId(
+    services: BotServices,
+    bot: Runtime<BotContext, BotEvent>,
+): UserId? {
+    services.botUserId?.let { return it }
+    runCatching { bot.execute { services.botUserId = fetchMe().id } }
+    return services.botUserId
 }

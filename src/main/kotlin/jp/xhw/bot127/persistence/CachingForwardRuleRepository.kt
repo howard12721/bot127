@@ -32,6 +32,14 @@ class CachingForwardRuleRepository(
         return added
     }
 
+    suspend fun update(rule: ForwardRule): ForwardRule? {
+        val updated = delegate.update(rule) ?: return null
+        writeLock.withLock {
+            snapshot = snapshot.withUpdated(updated)
+        }
+        return updated
+    }
+
     suspend fun remove(id: Uuid): ForwardRule? {
         val removed = delegate.remove(id) ?: return null
         writeLock.withLock {
@@ -52,6 +60,8 @@ class CachingForwardRuleRepository(
         fun withAdded(rule: ForwardRule): Snapshot = from(all + rule)
 
         fun withRemoved(rule: ForwardRule): Snapshot = from(all.filter { it.id != rule.id })
+
+        fun withUpdated(rule: ForwardRule): Snapshot = from(all.map { if (it.id == rule.id) rule else it })
 
         companion object {
             val EMPTY = Snapshot(emptyList(), emptyMap(), emptyList())

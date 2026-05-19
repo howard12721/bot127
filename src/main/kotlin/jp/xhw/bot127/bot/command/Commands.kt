@@ -43,6 +43,16 @@ private fun CommandRegistryBuilder.registerForwardCommands(services: BotServices
             }
         }
 
+        literal("set") {
+            string("ruleId") {
+                string("target") {
+                    string("mode") {
+                        executes { command -> command.handleForwardSet(services) }
+                    }
+                }
+            }
+        }
+
         literal("help") {
             executes { command -> command.handleForwardHelp(services) }
         }

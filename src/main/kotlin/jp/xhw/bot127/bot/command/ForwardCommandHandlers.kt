@@ -4,6 +4,7 @@ import jp.xhw.bot127.bot.BotServices
 import jp.xhw.bot127.domain.ANY_CHANNEL_LABEL
 import jp.xhw.bot127.domain.ForwardRule
 import jp.xhw.bot127.domain.isDirectMessageChannel
+import jp.xhw.bot127.domain.parseForwardAddOptions
 import jp.xhw.bot127.domain.parseRegexPattern
 import jp.xhw.trakt.bot.command.CommandContext
 import jp.xhw.trakt.bot.context.base.fetchChannelOrNull
@@ -27,7 +28,13 @@ internal suspend fun CommandContext.handleForwardAdd(
     }
 
     val targetUserId = message.author.id
-    val patternText = args.string("pattern")
+    val addOptions = parseForwardAddOptions(args.string("pattern"))
+    val patternText = addOptions.patternText
+
+    if (patternText.isBlank()) {
+        message.reply("正規表現を指定してください。")
+        return
+    }
 
     runCatching { parseRegexPattern(patternText) }.onFailure { error ->
         message.reply("正規表現が不正です: ${error.message ?: error::class.simpleName}")
@@ -39,6 +46,8 @@ internal suspend fun CommandContext.handleForwardAdd(
             channelId = sourceChannelId,
             patternText = patternText,
             targetUserId = targetUserId,
+            excludeOwnMessages = addOptions.excludeOwnMessages,
+            excludeBotMessages = addOptions.excludeBotMessages,
         )
     services.rules.add(rule)
 
@@ -58,10 +67,71 @@ internal suspend fun CommandContext.handleForwardAdd(
         チャンネル: $channelLabel
         正規表現: `$patternText`
         転送先: @$targetUserName
+        自分のメッセージ: ${rule.excludeOwnMessages.toExclusionLabel()}
+        Bot のメッセージ: ${rule.excludeBotMessages.toExclusionLabel()}
         ルールID: `${rule.id}`
         """.trimIndent(),
     )
 }
+
+context(_: BotContext)
+internal suspend fun CommandContext.handleForwardSet(services: BotServices) {
+    if (!message.isAllowedConfigChannel(services.configChannelAccess)) return
+
+    val id =
+        runCatching { Uuid.parse(args.string("ruleId")) }.getOrElse {
+            message.reply("ルールIDは UUID 形式で指定してください。")
+            return
+        }
+
+    val rule = services.rules.all().find { it.id == id }
+    if (rule == null) {
+        message.reply("ルール `$id` は見つかりません。")
+        return
+    }
+
+    if (rule.targetUserId != message.author.id) {
+        message.reply("自分が作成したルールのみ変更できます。")
+        return
+    }
+
+    val target = args.string("target")
+    val mode = args.string("mode")
+    val exclude =
+        when (mode) {
+            "exclude", "on", "除外" -> true
+            "include", "off", "含める" -> false
+            else -> {
+                message.reply("モードは `exclude` / `include`（または `除外` / `含める`）で指定してください。")
+                return
+            }
+        }
+
+    val updatedRule =
+        when (target) {
+            "self", "own", "自分" ->
+                rule.copy(excludeOwnMessages = exclude)
+
+            "bot", "Bot" ->
+                rule.copy(excludeBotMessages = exclude)
+
+            else -> {
+                message.reply("対象は `self`（自分）または `bot` で指定してください。")
+                return
+            }
+        }
+
+    services.rules.update(updatedRule)
+    message.reply(
+        """
+        転送ルール `$id` を更新しました。
+        自分のメッセージ: ${updatedRule.excludeOwnMessages.toExclusionLabel()}
+        Bot のメッセージ: ${updatedRule.excludeBotMessages.toExclusionLabel()}
+        """.trimIndent(),
+    )
+}
+
+private fun Boolean.toExclusionLabel(): String = if (this) "除外" else "含める"
 
 context(_: BotContext)
 internal suspend fun CommandContext.handleForwardList(services: BotServices) {
@@ -87,12 +157,18 @@ internal suspend fun CommandContext.handleForwardRemove(services: BotServices) {
             return
         }
 
-    val removed = services.rules.remove(id)
-    if (removed == null) {
+    val rule = services.rules.all().find { it.id == id }
+    if (rule == null) {
         message.reply("ルール `$id` は見つかりません。")
         return
     }
 
+    if (rule.targetUserId != message.author.id) {
+        message.reply("自分が作成したルールのみ削除できます。")
+        return
+    }
+
+    services.rules.remove(id)
     message.reply("転送ルール `$id` を削除しました。")
 }
 
@@ -117,5 +193,5 @@ private suspend fun ForwardRule.formatSummary(): String {
         }
     val user = fetchUserOrNull(targetUserId)
     val userLabel = user?.name?.let { "@$it" } ?: targetUserId.value.toString()
-    return "- `$channelLabel` `$patternText` -> $userLabel (id: `$id`)"
+    return "- `$channelLabel` `$patternText` -> $userLabel (id: `$id`, 自分:${excludeOwnMessages.toExclusionLabel()}, bot:${excludeBotMessages.toExclusionLabel()})"
 }

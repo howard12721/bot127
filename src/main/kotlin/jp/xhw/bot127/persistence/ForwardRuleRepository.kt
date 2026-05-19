@@ -10,6 +10,7 @@ import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.selectAll
+import org.jetbrains.exposed.v1.jdbc.update
 import kotlin.uuid.Uuid
 
 class ForwardRuleRepository {
@@ -20,8 +21,31 @@ class ForwardRuleRepository {
                 it[channelId] = channelIdToStorage(rule.channelId)
                 it[patternText] = rule.patternText
                 it[targetUserId] = rule.targetUserId.value.toString()
+                it[excludeOwnMessages] = rule.excludeOwnMessages
+                it[excludeBotMessages] = rule.excludeBotMessages
             }
             rule
+        }
+
+    suspend fun update(rule: ForwardRule): ForwardRule? =
+        dbQuery {
+            val existing =
+                ForwardRulesTable
+                    .selectAll()
+                    .where { ForwardRulesTable.id eq rule.id.toString() }
+                    .firstOrNull()
+                    ?.toForwardRule()
+                    ?: return@dbQuery null
+
+            ForwardRulesTable.update({ ForwardRulesTable.id eq rule.id.toString() }) {
+                it[excludeOwnMessages] = rule.excludeOwnMessages
+                it[excludeBotMessages] = rule.excludeBotMessages
+            }
+            rule.copy(
+                channelId = existing.channelId,
+                patternText = existing.patternText,
+                targetUserId = existing.targetUserId,
+            )
         }
 
     suspend fun remove(id: Uuid): ForwardRule? =
@@ -74,5 +98,7 @@ class ForwardRuleRepository {
             channelId = channelIdFromStorage(this[ForwardRulesTable.channelId]),
             patternText = this[ForwardRulesTable.patternText],
             targetUserId = UserId(Uuid.parse(this[ForwardRulesTable.targetUserId])),
+            excludeOwnMessages = this[ForwardRulesTable.excludeOwnMessages],
+            excludeBotMessages = this[ForwardRulesTable.excludeBotMessages],
         )
 }
