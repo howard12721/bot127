@@ -3,8 +3,8 @@ package jp.xhw.bot127
 import jp.xhw.bot127.bot.BotServices
 import jp.xhw.bot127.bot.configureBot
 import jp.xhw.bot127.config.AppConfig
-import jp.xhw.bot127.persistence.DatabaseFactory
 import jp.xhw.bot127.persistence.CachingForwardRuleRepository
+import jp.xhw.bot127.persistence.DatabaseFactory
 import jp.xhw.bot127.watch.configureWatcher
 import jp.xhw.trakt.bot.selfTrakt
 import jp.xhw.trakt.bot.trakt

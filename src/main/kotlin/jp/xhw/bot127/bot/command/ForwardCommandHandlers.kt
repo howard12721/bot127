@@ -106,7 +106,10 @@ context(_: BotContext)
 private suspend fun ForwardRule.formatSummary(): String {
     val channelLabel =
         when (val id = channelId) {
-            null -> ANY_CHANNEL_LABEL
+            null -> {
+                ANY_CHANNEL_LABEL
+            }
+
             else -> {
                 val channel = fetchChannelOrNull(id)
                 channel?.fetchPath()?.value ?: id.value.toString()

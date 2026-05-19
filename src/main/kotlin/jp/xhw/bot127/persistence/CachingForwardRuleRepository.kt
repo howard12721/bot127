@@ -2,9 +2,9 @@ package jp.xhw.bot127.persistence
 
 import jp.xhw.bot127.domain.ForwardRule
 import jp.xhw.trakt.bot.model.ChannelId
-import kotlin.uuid.Uuid
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlin.uuid.Uuid
 
 /**
  * [ForwardRuleRepository] の読み取りをメモリに載せ、ホットパス（タイムライン監視）の DB アクセスを避ける。
@@ -22,8 +22,7 @@ class CachingForwardRuleRepository(
         snapshot = Snapshot.from(delegate.all())
     }
 
-    fun forChannel(channelId: ChannelId): List<ForwardRule> =
-        snapshot.anyChannelRules + snapshot.byChannel[channelId].orEmpty()
+    fun forChannel(channelId: ChannelId): List<ForwardRule> = snapshot.anyChannelRules + snapshot.byChannel[channelId].orEmpty()
 
     suspend fun add(rule: ForwardRule): ForwardRule {
         val added = delegate.add(rule)

@@ -8,8 +8,7 @@ import jp.xhw.trakt.bot.context.bot.join
 import jp.xhw.trakt.bot.model.ChannelPath
 import jp.xhw.trakt.bot.model.Message
 
-internal fun Message.Detail.isAllowedConfigChannel(access: ConfigChannelAccess): Boolean =
-    access.allows(channel.id)
+internal fun Message.Detail.isAllowedConfigChannel(access: ConfigChannelAccess): Boolean = access.allows(channel.id)
 
 context(_: BotContext)
 internal suspend fun resolveConfigChannelAccess(config: AppConfig): ConfigChannelAccess {
