@@ -23,4 +23,4 @@ internal fun botHelpText(): String =
     
     - `!icon @user` / `!icon random`
       - 指定ユーザーまたはランダムなユーザーのアイコン画像 URL を投稿します。
-    """.trimIndent()
+    """.trimIndent() + "\n"
