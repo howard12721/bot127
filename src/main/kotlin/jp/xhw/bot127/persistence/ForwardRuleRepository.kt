@@ -4,13 +4,13 @@ import jp.xhw.bot127.domain.ForwardRule
 import jp.xhw.bot127.persistence.table.ForwardRulesTable
 import jp.xhw.trakt.bot.model.ChannelId
 import jp.xhw.trakt.bot.model.UserId
-import kotlin.uuid.Uuid
 import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.selectAll
+import kotlin.uuid.Uuid
 
 class ForwardRuleRepository {
     suspend fun add(rule: ForwardRule): ForwardRule =

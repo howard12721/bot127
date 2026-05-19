@@ -11,4 +11,18 @@ data class ForwardRule(
     val targetUserId: UserId,
 ) {
     val pattern: Regex by lazy { parseRegexPattern(patternText) }
+
+    companion object {
+        fun create(
+            channelId: ChannelId,
+            patternText: String,
+            targetUserId: UserId,
+        ): ForwardRule =
+            ForwardRule(
+                id = Uuid.random(),
+                channelId = channelId,
+                patternText = patternText,
+                targetUserId = targetUserId,
+            )
+    }
 }

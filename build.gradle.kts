@@ -17,6 +17,11 @@ dependencies {
     testImplementation(kotlin("test"))
     implementation(libs.trakt.bot)
     implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.hikaricp)
+    implementation(libs.mariadb)
+    implementation(libs.exposed.core)
+    implementation(libs.exposed.jdbc)
+    implementation(libs.exposed.java.time)
 }
 
 kotlin {
