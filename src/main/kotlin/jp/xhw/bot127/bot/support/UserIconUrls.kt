@@ -17,7 +17,7 @@ internal suspend fun Message.Detail.replyUserIcon(
 ) {
     runCatching {
         reply(iconFile.toUrl(), embed = true)
-    }.onFailure { error ->
+    }.recoverCatching { error ->
         reply("@$userName のアイコンを取得できません: ${error.message ?: error::class.simpleName}")
     }
 }

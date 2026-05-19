@@ -17,7 +17,7 @@ class ForwardRuleRepository {
         dbQuery {
             ForwardRulesTable.insert {
                 it[id] = rule.id.toString()
-                it[channelId] = rule.channelId.value.toString()
+                it[channelId] = channelIdToStorage(rule.channelId)
                 it[patternText] = rule.patternText
                 it[targetUserId] = rule.targetUserId.value.toString()
             }
@@ -48,11 +48,19 @@ class ForwardRuleRepository {
 
     suspend fun forChannel(channelId: ChannelId): List<ForwardRule> =
         dbQuery {
-            ForwardRulesTable
-                .selectAll()
-                .where { ForwardRulesTable.channelId eq channelId.value.toString() }
-                .orderBy(ForwardRulesTable.createdAt to SortOrder.ASC, ForwardRulesTable.id to SortOrder.ASC)
-                .map { it.toForwardRule() }
+            val channelRules =
+                ForwardRulesTable
+                    .selectAll()
+                    .where { ForwardRulesTable.channelId eq channelId.value.toString() }
+                    .orderBy(ForwardRulesTable.createdAt to SortOrder.ASC, ForwardRulesTable.id to SortOrder.ASC)
+                    .map { it.toForwardRule() }
+            val anyChannelRules =
+                ForwardRulesTable
+                    .selectAll()
+                    .where { ForwardRulesTable.channelId eq "" }
+                    .orderBy(ForwardRulesTable.createdAt to SortOrder.ASC, ForwardRulesTable.id to SortOrder.ASC)
+                    .map { it.toForwardRule() }
+            channelRules + anyChannelRules
         }
 
     suspend fun isEmpty(): Boolean =
@@ -63,7 +71,7 @@ class ForwardRuleRepository {
     private fun ResultRow.toForwardRule(): ForwardRule =
         ForwardRule(
             id = Uuid.parse(this[ForwardRulesTable.id]),
-            channelId = ChannelId(Uuid.parse(this[ForwardRulesTable.channelId])),
+            channelId = channelIdFromStorage(this[ForwardRulesTable.channelId]),
             patternText = this[ForwardRulesTable.patternText],
             targetUserId = UserId(Uuid.parse(this[ForwardRulesTable.targetUserId])),
         )
