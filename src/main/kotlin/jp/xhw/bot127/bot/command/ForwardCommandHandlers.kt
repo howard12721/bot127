@@ -1,11 +1,7 @@
 package jp.xhw.bot127.bot.command
 
 import jp.xhw.bot127.bot.BotServices
-import jp.xhw.bot127.domain.ANY_CHANNEL_LABEL
-import jp.xhw.bot127.domain.ForwardRule
-import jp.xhw.bot127.domain.isDirectMessageChannel
-import jp.xhw.bot127.domain.parseForwardAddOptions
-import jp.xhw.bot127.domain.parseRegexPattern
+import jp.xhw.bot127.domain.*
 import jp.xhw.trakt.bot.command.CommandContext
 import jp.xhw.trakt.bot.context.base.fetchChannelOrNull
 import jp.xhw.trakt.bot.context.base.fetchPath
@@ -99,8 +95,14 @@ internal suspend fun CommandContext.handleForwardSet(services: BotServices) {
     val mode = args.string("mode")
     val exclude =
         when (mode) {
-            "exclude", "on", "除外" -> true
-            "include", "off", "含める" -> false
+            "exclude", "on", "除外" -> {
+                true
+            }
+
+            "include", "off", "含める" -> {
+                false
+            }
+
             else -> {
                 message.reply("モードは `exclude` / `include`（または `除外` / `含める`）で指定してください。")
                 return
@@ -109,11 +111,13 @@ internal suspend fun CommandContext.handleForwardSet(services: BotServices) {
 
     val updatedRule =
         when (target) {
-            "self", "own", "自分" ->
+            "self", "own", "自分" -> {
                 rule.copy(excludeOwnMessages = exclude)
+            }
 
-            "bot", "Bot" ->
+            "bot", "Bot" -> {
                 rule.copy(excludeBotMessages = exclude)
+            }
 
             else -> {
                 message.reply("対象は `self`（自分）または `bot` で指定してください。")
