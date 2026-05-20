@@ -12,7 +12,7 @@ data class ForwardRule(
     val targetUserId: UserId,
     /** ルール作成者（転送先）のメッセージを転送しない。 */
     val excludeOwnMessages: Boolean = true,
-    /** この Bot のメッセージを転送しない。 */
+    /** Bot ユーザーのメッセージを転送しない。 */
     val excludeBotMessages: Boolean = true,
 ) {
     val pattern: Regex by lazy { parseRegexPattern(patternText) }

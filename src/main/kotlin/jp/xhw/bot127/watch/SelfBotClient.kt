@@ -8,14 +8,12 @@ import jp.xhw.trakt.bot.context.base.fetchUserOrNull
 import jp.xhw.trakt.bot.context.base.sendDirectMessage
 import jp.xhw.trakt.bot.context.base.url
 import jp.xhw.trakt.bot.context.bot.BotContext
-import jp.xhw.trakt.bot.context.bot.fetchMe
 import jp.xhw.trakt.bot.context.user.UserContext
 import jp.xhw.trakt.bot.context.user.setTimelineStreaming
 import jp.xhw.trakt.bot.infrastructure.runtime.Runtime
 import jp.xhw.trakt.bot.infrastructure.runtime.SelfTraktClientBuilder
 import jp.xhw.trakt.bot.model.BotEvent
 import jp.xhw.trakt.bot.model.Initialized
-import jp.xhw.trakt.bot.model.UserId
 import jp.xhw.trakt.bot.model.UserMessageCreated
 
 fun SelfTraktClientBuilder.configureWatcher(
@@ -43,12 +41,12 @@ private suspend fun forwardMatchingRules(
         return
     }
 
-    val botUserId = resolveBotUserId(services, bot)
+    val authorIsBot = fetchUserOrNull(message.author.id)?.isBot ?: false
     val rules =
         services.rules
             .forChannel(message.channel.id)
             .filter { it.pattern.containsMatchIn(message.content) }
-            .filter { !it.shouldExcludeMessage(message.author.id, botUserId) }
+            .filter { !it.shouldExcludeMessage(message.author.id, authorIsBot) }
     if (rules.isEmpty()) {
         return
     }
@@ -71,13 +69,4 @@ private suspend fun forwardMatchingRules(
                 }
             }
         }
-}
-
-private suspend fun resolveBotUserId(
-    services: BotServices,
-    bot: Runtime<BotContext, BotEvent>,
-): UserId? {
-    services.botUserId?.let { return it }
-    runCatching { bot.execute { services.botUserId = fetchMe().id } }
-    return services.botUserId
 }
