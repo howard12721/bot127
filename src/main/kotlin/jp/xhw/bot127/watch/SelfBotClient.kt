@@ -41,7 +41,7 @@ private suspend fun forwardMatchingRules(
         return
     }
 
-    val authorIsBot = fetchUserOrNull(message.author.id)?.isBot ?: false
+    val authorIsBot = message.author.fetch().isBot
     val rules =
         services.rules
             .forChannel(message.channel.id)
