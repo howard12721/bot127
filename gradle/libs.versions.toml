@@ -1,6 +1,6 @@
 [versions]
 kotlin = "2.3.21"
-trakt-bot = "5.0.1"
+trakt-bot = "5.1.0"
 kotlinx-coroutines = "1.11.0"
 hikaricp = "7.0.2"
 mariadb = "3.5.8"
