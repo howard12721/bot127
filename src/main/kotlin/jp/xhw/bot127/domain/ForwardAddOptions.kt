@@ -39,12 +39,12 @@ fun parseForwardAddOptions(raw: String): ForwardAddOptions {
 
 fun ForwardRule.shouldExcludeMessage(
     authorId: UserId,
-    botUserId: UserId?,
+    authorIsBot: Boolean,
 ): Boolean {
     if (excludeOwnMessages && authorId == targetUserId) {
         return true
     }
-    if (excludeBotMessages && botUserId != null && authorId == botUserId) {
+    if (excludeBotMessages && authorIsBot) {
         return true
     }
     return false
