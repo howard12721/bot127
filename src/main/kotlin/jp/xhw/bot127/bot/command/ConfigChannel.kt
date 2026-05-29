@@ -16,7 +16,7 @@ internal suspend fun resolveConfigChannelAccess(config: AppConfig): ConfigChanne
         config.configChannelPath
             ?: return ConfigChannelAccess.unrestricted
     val channel =
-        fetchChannelByPath(ChannelPath(path))
+        fetchChannelByPath(ChannelPath.parse(path))
             ?: throw IllegalStateException(
                 "FORWARD_CONFIG_CHANNEL で指定されたチャンネルが見つかりません: $path",
             )

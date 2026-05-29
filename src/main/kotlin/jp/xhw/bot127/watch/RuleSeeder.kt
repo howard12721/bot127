@@ -26,7 +26,7 @@ internal suspend fun seedRulesIfEmpty(
             resolved += seed to null
             continue
         }
-        val channel = fetchChannelByPath(ChannelPath(seed.channelPath))
+        val channel = fetchChannelByPath(ChannelPath.parse(seed.channelPath))
         if (channel == null) {
             failures += seed.channelPath
         } else {

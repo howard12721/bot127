@@ -35,7 +35,7 @@ internal suspend fun reportForwardFailure(
         """.trimIndent()
 
     runCatching {
-        fetchChannelByPath(ChannelPath(path))?.sendMessage(notification)
+        fetchChannelByPath(ChannelPath.parse(path))?.sendMessage(notification)
     }.onFailure { notifyError ->
         logger.log(
             Level.WARNING,
