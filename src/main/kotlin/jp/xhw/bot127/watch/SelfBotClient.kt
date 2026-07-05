@@ -55,14 +55,16 @@ private suspend fun forwardMatchingRules(
     val messageUrl = message.url()
 
     rules
-        .map { it.targetUserId }
-        .distinct()
-        .forEach { targetUserId ->
+        .groupBy { it.targetUserId }
+        .forEach { (targetUserId, entries) ->
             bot.execute {
                 val targetUser = fetchUserOrNull(targetUserId) ?: return@execute
                 val failure =
                     runCatching {
-                        targetUser.sendDirectMessage(content = messageUrl, embed = true)
+                        targetUser.sendDirectMessage(
+                            content = "${entries.joinToString(", ") { it.patternText }}\n$messageUrl",
+                            embed = true,
+                        )
                     }.exceptionOrNull()
                 if (failure != null) {
                     reportForwardFailure(services, targetUserId, messageUrl, failure)
