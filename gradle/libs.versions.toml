@@ -1,5 +1,5 @@
 [versions]
-kotlin = "2.3.21"
+kotlin = "2.4.10"
 trakt-bot = "5.1.1"
 kotlinx-coroutines = "1.11.0"
 hikaricp = "7.0.2"
